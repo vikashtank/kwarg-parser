@@ -20,20 +20,39 @@ class Parser():
     def add_validator(self, validator: Validator):
         self._validators.append(validator)
 
+    @property
+    def default(self):
+        return self._default
+
+    @default.setter
+    def default(self, default_dict):
+        self._default = default_dict
+
     def validate(self, kwargs):
         for validator in  self._validators:
             validator.validate(kwargs)
+
+    def _try_apply_default(self, kwargs):
+        """
+        apply default values to inputs
+        """
+        try:
+            for key, value in self.default.items():
+                kwargs.setdefault(key, value)
+        except AttributeError:
+            pass
 
     def __call__(self, function):
 
         def validator(*args, **kwargs):
             self.validate(kwargs)
+            self._try_apply_default(kwargs)
             return function(*args, **kwargs)
 
         return validator
 
 class MutuallyExclusive(Validator):
-    pass
+
 
     def __init__(self, *arg_names: str):
         self.arg_names = arg_names

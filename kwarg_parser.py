@@ -32,6 +32,9 @@ class Parser():
         for validator in  self._validators:
             validator.validate(kwargs)
 
+    def add_argument(self):
+        pass
+
     def _try_apply_default(self, kwargs):
         """
         apply default values to inputs
@@ -51,6 +54,34 @@ class Parser():
 
         return validator
 
+
+class Argument(Validator):
+
+    def __init__(self, name, default = None, type = None):
+        self.name = name
+        self.default = None
+        self.type = type
+
+    def validate(self, kwargs):
+        value = self.validate_existance(kwargs)
+        self.validate_type(value)
+
+    def validate_existance(self, kwargs):
+        try:
+            return kwargs[self.name]
+        except KeyError:
+            raise ValidationError(f"argument: '{self.name}' does not exist")
+
+
+    def validate_type(self, value):
+        if not self._validate_type(value, self.type):
+            raise ValidationError(f"'{value}' is not of type {self.type}")
+
+    def _validate_type(self, value, type):
+        return isinstance(value, int)
+
+
+
 class MutuallyExclusive(Validator):
 
 
@@ -66,3 +97,17 @@ class MutuallyExclusive(Validator):
         if len(intersection) > 1:
             raise ValidationError(" mutually_exclusive arguments:"
                                   f" {intersection} cannot appear together")
+
+"""
+TODO:
+
+    add optional arguments
+    add arguments to parser class
+    add argument type specification
+    add argument list size [*, +]
+    add defaults to arguments
+    errors for not specified arguments
+    add groups" group = parser.add_argument_group(name)
+                group.add_argument()
+    add mutually_exclusive_group()
+"""
